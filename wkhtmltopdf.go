@@ -301,9 +301,9 @@ func (pdfg *PDFGenerator) run(ctx context.Context, cpuLimit *int) error {
 	var args []string
 
 	if cpuLimit != nil {
-		args = append(args, fmt.Sprintf("-l %d", *cpuLimit))
+		args = append(args, fmt.Sprintf("-l %d --", *cpuLimit))
 	} else {
-		args = append(args, "-l 0")
+		args = append(args, "-l 0 --")
 	}
 
 	args = append(args, pdfg.binPath)
