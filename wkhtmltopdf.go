@@ -287,18 +287,28 @@ func (pdfg *PDFGenerator) findPath() error {
 }
 
 // Create creates the PDF document and stores it in the internal buffer if no error is returned
-func (pdfg *PDFGenerator) Create() error {
-	return pdfg.run(context.Background())
+func (pdfg *PDFGenerator) Create(cpuLimit *int) error {
+	return pdfg.run(context.Background(), cpuLimit)
 }
 
 // CreateContext is Create with a context passed to exec.CommandContext when calling wkhtmltopdf
-func (pdfg *PDFGenerator) CreateContext(ctx context.Context) error {
-	return pdfg.run(ctx)
+func (pdfg *PDFGenerator) CreateContext(ctx context.Context, cpuLimit *int) error {
+	return pdfg.run(ctx, cpuLimit)
 }
 
-func (pdfg *PDFGenerator) run(ctx context.Context) error {
+func (pdfg *PDFGenerator) run(ctx context.Context, cpuLimit *int) error {
 	// create command
-	cmd := exec.CommandContext(ctx, "cpulimit -l 50 "+pdfg.binPath, pdfg.Args()...)
+	var args []string
+
+	if cpuLimit != nil {
+		args = append(args, fmt.Sprintf("-l %d", *cpuLimit))
+	} else {
+		args = append(args, "-l 0")
+	}
+
+	args = append(args, pdfg.binPath)
+	args = append(args, pdfg.Args()...)
+	cmd := exec.CommandContext(ctx, "cpulimit", args...)
 
 	// set stderr to the provided writer, or create a new buffer
 	var errBuf *bytes.Buffer
